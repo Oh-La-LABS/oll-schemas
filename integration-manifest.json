@@ -1,0 +1,549 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "title": "integration-manifest",
+  "$id": "https://schemas.oh-lalabs.com/schemas/integration-manifest",
+  "type": "object",
+  "properties": {
+    "manifest_version": {
+      "enum": [
+        1
+      ],
+      "type": "integer"
+    },
+    "name": {
+      "$comment": "Controll command is generated from this, for user integrations: cui-{{manifest.name}}",
+      "type": "string"
+    },
+    "license": {
+      "enum": [
+        "MIT",
+        "OLLLEC"
+      ],
+      "$comment": "User integrations should use MIT.",
+      "type": "string"
+    },
+    "name_pretty": {
+      "$comment": "Used for example as program name in dashboards. May contain space, a-zA-Z0-9, dash(-) and underscore(_).",
+      "type": "string"
+    },
+    "version": {
+      "$comment": "Semver version (eg. '0.2.1'), NOT the same version as the container. Bump the version for each release.",
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 14,
+      "pattern": "^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)$"
+    },
+    "last_update": {
+      "$comment": "ISO 8601 Date and Time",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^( ?:19|20)\\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:Z|-0[1-9]|-1\\d|-2[0-3]|-00:?(?:0[1-9]|[1-5]\\d)|\\+[01]\\d|\\+2[0-3])(?:|:?[0-5]\\d)$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "quality": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "enum": [
+            "silver",
+            "gold",
+            "platinum",
+            "internal"
+          ],
+          "type": "string"
+        }
+      ]
+    },
+    "contributors": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "name"
+        ]
+      }
+    },
+    "copyright": {
+      "$comment": "HAS to have a matching name in {{manifest.contributors}}.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "code_owners": {
+      "$comment": "Github usernames/organisations.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "iot_class": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "enum": [
+            "assumed_state",
+            "cloud_polling",
+            "cloud_push",
+            "local_polling",
+            "local_push",
+            "calculated"
+          ],
+          "type": "string"
+        }
+      ]
+    },
+    "target_user": {
+      "$comment": "Only valid in official mono-repo. For container-based user integrations this has to be 'oh-la', may be other usernames for other types of integrations.",
+      "type": "string"
+    },
+    "home": {
+      "$comment": "Only valid in official mono-repo.",
+      "enum": [
+        "default"
+      ],
+      "type": "string"
+    },
+    "data_folder": {
+      "$comment": "Only valid in official mono-repo.",
+      "enum": [
+        "default"
+      ],
+      "type": "string"
+    },
+    "container": {
+      "$comment": "Used by integrations using a container.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "$comment": "Usually the same as {{manifest.name}}, but not always.",
+          "type": "string"
+        },
+        "license": {
+          "$comment": "The license of the container.",
+          "type": "string"
+        },
+        "repo": {
+          "$comment": "Container repository, eg docker.io, ghcr.io etc.",
+          "type": "string"
+        },
+        "port_map": {
+          "$comment": "For the CORE primary LAN IP, use {{system.eth0.ip}}. ",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "http_port": {
+          "$comment": "This is the port for nginx to proxy to, if more than one port, use custom nginx templates. If none, set to null.",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "export_serial": {
+          "$comment": "Set to true to map all serial devices into this container. Only use this if needed.",
+          "type": "boolean"
+        },
+        "folder_map": {
+          "$comment": "Folder mappings for the container. Bash variables are available to use, such as '$HOME'. Jinja2 templating may also be used.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env_map": {
+          "$comment": "Environment variables to pass to the container. Bash variables are available to use, such as '$HOME'. Jinja2 templating may also be used.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "env_map",
+        "folder_map",
+        "http_port",
+        "license",
+        "name",
+        "port_map",
+        "repo"
+      ]
+    },
+    "local": {
+      "$comment": "Used by integrations NOT using a container.",
+      "type": "object",
+      "properties": {
+        "tcp_ports": {
+          "$comment": "TCP ports used by the service.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "udp_ports": {
+          "$comment": "UDP ports used by the service.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "http_port": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "http_port",
+        "tcp_ports",
+        "udp_ports"
+      ]
+    },
+    "systemd": {
+      "$comment": "Used to configure the systemd service for the integration, if one is needed.",
+      "type": "object",
+      "properties": {
+        "generate_template": {
+          "$comment": "Usually this should be set to 'default'.",
+          "type": "string"
+        },
+        "update_before_start": {
+          "type": "boolean"
+        },
+        "systemd_timeout_start_sec": {
+          "type": "string"
+        },
+        "systemd_timeout_stop_sec": {
+          "type": "integer"
+        },
+        "systemd_additional_after": {
+          "type": "string"
+        },
+        "systemd_exec_start_pre": {
+          "type": "string"
+        },
+        "systemd_exec_start_post": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "generate_template"
+      ]
+    },
+    "nginx": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "config_template": {
+              "type": "null"
+            },
+            "config_enabled": {
+              "type": "array"
+            },
+            "ports": {
+              "type": "array"
+            },
+            "ui_url": {
+              "type": "string"
+            },
+            "test_url": {
+              "type": "string"
+            },
+            "sso_urls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "unprotected_urls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "config_enabled",
+            "config_template",
+            "ports",
+            "sso_urls",
+            "test_url",
+            "ui_url",
+            "unprotected_urls"
+          ]
+        }
+      ]
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "owner_user": {
+          "type": "string"
+        },
+        "owner_group": {
+          "type": "string"
+        },
+        "chown_from_root": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "chown_from_root",
+        "owner_group",
+        "owner_user"
+      ]
+    },
+    "secrets": {
+      "$comment": "These are settings for auto-generated INTERNAL secrets to use between and on services.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "patternProperties": {
+            "^([a-zA-Z][a-zA-Z0-9_-]+)$": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "user_input": {
+      "$comment": "Data to request from the user during install, secrets are not kept AFTER install, other answers are kept in: /home/oh-la/data/user_input_{{manifest.name}}.json",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "patternProperties": {
+            "^([a-zA-Z][a-zA-Z0-9_-]+)$": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "string",
+                    "number"
+                  ]
+                },
+                "secret": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "question",
+                "type",
+                "secret"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "variables": {
+      "$comment": "Custom variables made available to Jinja2 templates and the integration.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "patternProperties": {
+            "^([a-zA-Z][a-zA-Z0-9_-]+)$": {
+              "type": [
+                "number",
+                "string"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "marjebian": {
+          "$comment": "If this dependency is not satisfied installation will fail.",
+          "type": "string"
+        },
+        "oll-packages": {
+          "$comment": "Missing OLL package dependencies will be installed, unless there's a conflict with existing packages.",
+          "type": "object",
+          "patternProperties": {
+            "^([a-zA-Z][a-zA-Z0-9_-]+)$": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "apt": {
+          "$comment": "Missing APT dependencies will be installed, unless there's a conflict with existing packages.",
+          "type": "object",
+          "patternProperties": {
+            "^([a-zA-Z][a-zA-Z0-9_-]+)$": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "pip3": {
+          "$comment": "Missing PIP3 dependencies will be installed, unless there's a conflict with existing packages.",
+          "type": "object",
+          "patternProperties": {
+            "^([a-zA-Z][a-zA-Z0-9_-]+)$": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "npm": {
+          "$comment": "Missing NPM dependencies will be installed, unless there's a conflict with existing packages. Yarn is used for installs.",
+          "type": "object",
+          "patternProperties": {
+            "^([a-zA-Z][a-zA-Z0-9_-]+)$": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "marjebian",
+        "oll-packages"
+      ]
+    },
+    "mqtt": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "base_topics": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "supported_brands": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    },
+    "discovery": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "code_owners",
+    "contributors",
+    "copyright",
+    "data",
+    "data_folder",
+    "description",
+    "home",
+    "keywords",
+    "last_update",
+    "license",
+    "manifest_version",
+    "name",
+    "name_pretty",
+    "quality",
+    "requirements",
+    "target_user",
+    "version"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "container": false
+        }
+      },
+      "then": {
+        "required": [
+          "local"
+        ],
+        "not": {
+          "required": [
+            "container"
+          ]
+        }
+      },
+      "else": {
+        "required": [
+          "container"
+        ],
+        "not": {
+          "required": [
+            "local"
+          ]
+        }
+      }
+    }
+  ]
+}
