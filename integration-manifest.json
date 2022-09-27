@@ -58,7 +58,7 @@
             "silver",
             "gold",
             "platinum",
-            "internal"
+            "native"
           ],
           "type": "string"
         }
