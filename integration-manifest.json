@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/schema",
   "title": "integration-manifest",
-  "$id": "https://schemas.oh-lalabs.com/schemas/integration-manifest",
+  "$id": "https://oh-lalabs.com/schemas/integration-manifest",
   "type": "object",
   "properties": {
     "manifest_version": {
