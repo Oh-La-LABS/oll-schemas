@@ -12,7 +12,8 @@
     },
     "name": {
       "$comment": "Controll command is generated from this, for user integrations: cui-{{manifest.name}}",
-      "type": "string"
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9]$"
     },
     "license": {
       "enum": [
